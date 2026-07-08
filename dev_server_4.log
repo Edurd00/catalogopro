@@ -1,0 +1,13 @@
+
+> ecommerce-multi-nicho@1.0.0 dev
+> vite
+
+
+  VITE v5.4.21  ready in 668 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+7:19:37 PM [vite] page reload src/pages/store/Home.js
+7:23:04 PM [vite] page reload src/pages/store/Home.js
+7:23:39 PM [vite] page reload src/pages/store/Home.js
+7:24:10 PM [vite] page reload src/pages/store/Home.js
