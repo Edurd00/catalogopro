@@ -94,13 +94,12 @@ async function mountApp() {
 
     cartContainer.innerHTML = CartDrawer.render();
     CartDrawer.bindEvents(cartContainer, () => CheckoutModal.open());
-
-    // Configura o callback global para o checkout
-    window.currentCheckoutCallback = async (formData) => {
+    checkoutContainer.innerHTML = CheckoutModal.render();
+    CheckoutModal.bindEvents(checkoutContainer, async (formData) => {
       const { tenant } = appContext.getState();
       const res = await orderService.createOrder({ ...formData, cartItems: cart, tenant });
       if (res.success) { CheckoutModal.close(); appContext.clearCart(); }
-    };
+    });
   }
 
   homeContainer.innerHTML = await Home.render();

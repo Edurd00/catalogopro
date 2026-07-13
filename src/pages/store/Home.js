@@ -1,5 +1,4 @@
 import { supabase } from '../../config/supabase.js';
-import { appContext } from '../../context/AppContext.js';
 import { ProductDetailsModal } from '../../components/product/ProductDetailsModal.js';
 
 export const Home = {
@@ -202,11 +201,8 @@ export const Home = {
                 ${hasDiscount ? `<span class="text-[10px] text-gray-400 line-through">R$ ${prod.price}</span>` : ''}
                 <span class="text-sm md:text-lg font-black ${hasDiscount ? 'text-red-600' : 'text-gray-900'}">${formatCurrency(promoPrice || price)}</span>
               </div>
-              <button
-                ${appContext.getState().tenant?.is_open === false ? 'disabled' : ''}
-                class="js-quick-add mt-2 w-full ${appContext.getState().tenant?.is_open === false ? 'bg-gray-400 cursor-not-allowed' : 'bg-gray-900 hover:bg-lojaPrimaria'} text-white py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-sm"
-              >
-                ${appContext.getState().tenant?.is_open === false ? 'Fechada' : 'Adicionar'}
+              <button class="js-quick-add mt-2 w-full bg-gray-900 text-white py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-lojaPrimaria transition-colors shadow-sm">
+                Adicionar
               </button>
             </div>
           </div>

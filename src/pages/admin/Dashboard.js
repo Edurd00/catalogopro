@@ -54,24 +54,16 @@ export const Dashboard = {
               </div>
 
               <div class="${isExpanded ? 'block' : 'hidden'} p-3 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
-                <div class="space-y-4">
+                <div class="space-y-3">
                     <div>
                         <h5 class="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">Descrição</h5>
                         <p class="text-gray-600 dark:text-gray-400 leading-relaxed text-[11px]">${prod.description || 'Sem descrição.'}</p>
                     </div>
                     ${prod.colors && prod.colors.length > 0 ? `
                         <div>
-                            <h5 class="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">${prod.option_title_1 || 'Opções'}</h5>
+                            <h5 class="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">Cores</h5>
                             <div class="flex flex-wrap gap-1">
                                 ${prod.colors.map(c => `<span class="bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-[9px] font-bold text-gray-600 dark:text-gray-300 uppercase">${c}</span>`).join('')}
-                            </div>
-                        </div>
-                    ` : ''}
-                    ${prod.attributes && prod.attributes.length > 0 ? `
-                        <div>
-                            <h5 class="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">${prod.option_title_2 || 'Tamanhos'}</h5>
-                            <div class="flex flex-wrap gap-1">
-                                ${prod.attributes.map(a => `<span class="bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-[9px] font-bold text-gray-600 dark:text-gray-300 uppercase">${a}</span>`).join('')}
                             </div>
                         </div>
                     ` : ''}
@@ -132,20 +124,6 @@ export const Dashboard = {
 
                   <form id="admin-tenant-form" class="p-6 space-y-4 bg-white dark:bg-gray-900">
                     <div class="space-y-4">
-                      <!-- Status da Loja -->
-                      <div class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-800 flex items-center justify-between">
-                        <div>
-                          <h4 class="text-[10px] font-black text-gray-900 dark:text-gray-100 uppercase tracking-widest">Status da Loja</h4>
-                          <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-0.5" id="store-status-text">
-                            ${tenant.is_open ? '<span class="text-green-600">● Aberta</span>' : '<span class="text-red-600">● Fechada</span>'}
-                          </p>
-                        </div>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                          <input type="checkbox" id="conf-is-open" ${tenant.is_open ? 'checked' : ''} class="sr-only peer" />
-                          <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
-                        </label>
-                      </div>
-
                       <!-- Seção 1: Identidade -->
                       <div class="border border-gray-100 dark:border-gray-800 rounded-2xl overflow-hidden bg-gray-50/50 dark:bg-gray-800/20">
                         <button type="button" onclick="window.toggleConfigAccordion('identity')" class="w-full p-4 flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
@@ -153,22 +131,12 @@ export const Dashboard = {
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-lojaPrimaria" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                             Identidade da Loja
                           </span>
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 transition-transform ${window.adminConfigExpanded === 'identity' ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 transition-transform \text{window.adminConfigExpanded === 'identity' ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
                         <div class="${window.adminConfigExpanded === 'identity' ? 'block' : 'hidden'} p-4 space-y-4 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <div>
-                                <label class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-1.5">Nome da Loja</label>
-                                <input type="text" id="conf-name" value="${tenant.store_name || ''}" required class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl p-3 text-sm font-bold text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-lojaPrimaria transition" />
-                              </div>
-                              <div>
-                                <label class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-1.5">Título da Hero</label>
-                                <input type="text" id="conf-hero-title" value="${tenant.hero_title || ''}" class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl p-3 text-sm font-bold text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-lojaPrimaria transition" />
-                              </div>
-                              <div class="md:col-span-2">
-                                <label class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-1.5">Subtítulo da Hero</label>
-                                <input type="text" id="conf-hero-subtitle" value="${tenant.hero_subtitle || ''}" class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl p-3 text-sm font-bold text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-lojaPrimaria transition" />
-                              </div>
+                          <div>
+                            <label class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-1.5">Nome da Loja</label>
+                            <input type="text" id="conf-name" value="${tenant.store_name || ''}" required class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl p-3 text-sm font-bold text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-lojaPrimaria transition" />
                           </div>
                           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="space-y-1">
@@ -199,7 +167,7 @@ export const Dashboard = {
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-lojaPrimaria" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.172-1.172a4 4 0 115.656 5.656l-1.172 1.172" /></svg>
                             Cores & Estilo
                           </span>
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 transition-transform ${window.adminConfigExpanded === 'style' ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 transition-transform \text{window.adminConfigExpanded === 'style' ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
                         <div class="${window.adminConfigExpanded === 'style' ? 'block' : 'hidden'} p-4 space-y-4 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
                           <div class="grid grid-cols-2 gap-4">
@@ -228,7 +196,7 @@ export const Dashboard = {
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-lojaPrimaria" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                             Contato & Redes Sociais
                           </span>
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 transition-transform ${window.adminConfigExpanded === 'social' ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 transition-transform \text{window.adminConfigExpanded === 'social' ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
                         <div class="${window.adminConfigExpanded === 'social' ? 'block' : 'hidden'} p-4 space-y-4 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
                           <div>
@@ -314,31 +282,16 @@ export const Dashboard = {
                         </div>
                       </div>
                       ${ImageUpload.render('prod', '', 'Foto do Produto')}
-
-                      <div class="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-                        <h4 class="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest flex items-center gap-2">
-                           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
-                           Atributos e Opcionais do Produto
-                        </h4>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                           <div>
-                              <label class="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Título Grupo 1 (Ex: Cores)</label>
-                              <input type="text" id="prod-opt-title-1" class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl p-3 text-sm font-bold text-gray-900 dark:text-gray-100" placeholder="Ex: Cores, Sabores..." />
-                              <label class="block text-[9px] font-black text-gray-400 uppercase tracking-widest mt-2 mb-1">Valores (sep. por vírgula)</label>
-                              <input type="text" id="prod-colors" class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl p-3 text-sm font-bold text-gray-900 dark:text-gray-100" placeholder="Azul, Preto, Branco..." />
-                           </div>
-                           <div>
-                              <label class="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Título Grupo 2 (Ex: Tamanhos)</label>
-                              <input type="text" id="prod-opt-title-2" class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl p-3 text-sm font-bold text-gray-900 dark:text-gray-100" placeholder="Ex: Tamanhos, Bordas..." />
-                              <label class="block text-[9px] font-black text-gray-400 uppercase tracking-widest mt-2 mb-1">Valores (sep. por vírgula)</label>
-                              <input type="text" id="prod-attributes" class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl p-3 text-sm font-bold text-gray-900 dark:text-gray-100" placeholder="P, M, G ou Tradicional, Recheada..." />
-                           </div>
-                        </div>
+                      <div>
+                         <label class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-1.5">Cores (separadas por vírgula)</label>
+                         <input type="text" id="prod-colors" class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl p-3 text-sm font-bold text-gray-900 dark:text-gray-100" placeholder="Preto, Branco, Azul" />
                       </div>
-
-                      <div class="md:col-span-2 pt-4 border-t border-gray-100 dark:border-gray-800">
-                        <label class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-1.5">Galeria de Imagens (URLs separadas por vírgula)</label>
+                      <div>
+                         <label class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-1.5">Tamanhos (P, M, G)</label>
+                         <input type="text" id="prod-attributes" class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl p-3 text-sm font-bold text-gray-900 dark:text-gray-100" />
+                      </div>
+                      <div class="md:col-span-2">
+                        <label class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-1.5">Outras Imagens (URLs separadas por vírgula)</label>
                         <textarea id="prod-image-urls" class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl p-3 text-sm font-bold text-gray-900 dark:text-gray-100 h-20" placeholder="https://exemplo.com/foto2.jpg, https://exemplo.com/foto3.jpg"></textarea>
                       </div>
                     </div>
@@ -594,8 +547,6 @@ export const Dashboard = {
         try {
           const updatedData = {
             store_name: container.querySelector('#conf-name').value,
-            hero_title: container.querySelector('#conf-hero-title').value,
-            hero_subtitle: container.querySelector('#conf-hero-subtitle').value,
             logo_url: container.querySelector('#url-logo').value,
             hero_image_url: container.querySelector('#url-hero').value,
             whatsapp_number: container.querySelector('#conf-phone').value,
@@ -604,8 +555,7 @@ export const Dashboard = {
             secondary_color: container.querySelector('#conf-secondary').value,
             instagram_url: container.querySelector('#conf-instagram').value,
             facebook_url: container.querySelector('#conf-facebook').value,
-            footer_bio: container.querySelector('#conf-show-hero-text').checked ? 'SHOW_HERO_TEXT' : 'HIDE_HERO_TEXT',
-            is_open: container.querySelector('#conf-is-open').checked
+            footer_bio: container.querySelector('#conf-show-hero-text').checked ? 'SHOW_HERO_TEXT' : 'HIDE_HERO_TEXT'
           };
 
           const { data: currentTenant } = await supabase.from('tenant_settings').select('id').maybeSingle();
@@ -667,9 +617,7 @@ export const Dashboard = {
         container.querySelector('#prod-description').value = prod.description || '';
         container.querySelector('#prod-price').value = prod.price;
         container.querySelector('#prod-promo').value = prod.promo_price || '';
-        container.querySelector('#prod-opt-title-1').value = prod.option_title_1 || '';
         container.querySelector('#prod-colors').value = Array.isArray(prod.colors) ? prod.colors.join(', ') : '';
-        container.querySelector('#prod-opt-title-2').value = prod.option_title_2 || '';
         container.querySelector('#prod-attributes').value = Array.isArray(prod.attributes) ? prod.attributes.join(', ') : '';
 
         const otherUrls = Array.isArray(prod.image_urls) ? prod.image_urls.filter(u => u !== prod.image_url) : [];
@@ -710,9 +658,7 @@ export const Dashboard = {
         container.querySelector('#prod-description').value = prod.description || '';
         container.querySelector('#prod-price').value = prod.price;
         container.querySelector('#prod-promo').value = prod.promo_price || '';
-        container.querySelector('#prod-opt-title-1').value = prod.option_title_1 || '';
         container.querySelector('#prod-colors').value = Array.isArray(prod.colors) ? prod.colors.join(', ') : '';
-        container.querySelector('#prod-opt-title-2').value = prod.option_title_2 || '';
         container.querySelector('#prod-attributes').value = Array.isArray(prod.attributes) ? prod.attributes.join(', ') : '';
 
         const otherUrls = Array.isArray(prod.image_urls) ? prod.image_urls.filter(u => u !== prod.image_url) : [];
@@ -773,9 +719,7 @@ export const Dashboard = {
             promo_price: promoVal ? parseFloat(promoVal) : null,
             image_url: mainUrl,
             image_urls: [mainUrl, ...extraUrls].filter(url => url),
-            option_title_1: container.querySelector('#prod-opt-title-1').value,
             colors: container.querySelector('#prod-colors').value.split(',').map(s => s.trim()).filter(s => s),
-            option_title_2: container.querySelector('#prod-opt-title-2').value,
             attributes: container.querySelector('#prod-attributes').value.split(',').map(s => s.trim()).filter(s => s)
           };
 

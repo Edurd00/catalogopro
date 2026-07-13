@@ -9,7 +9,7 @@ export const ImageUpload = {
         <div class="flex items-center gap-4">
           <div class="relative w-20 h-20 border-2 border-dashed border-gray-200 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center group">
             ${currentUrl
-              ? `<img src="${currentUrl}" id="preview-${id}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100';" />`
+              ? `<img src="${currentUrl}" id="preview-${id}" class="w-full h-full object-cover" />`
               : `<div id="placeholder-${id}" class="text-gray-300">
                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -30,7 +30,7 @@ export const ImageUpload = {
                <div id="progress-bar-${id}" class="bg-lojaPrimaria h-full w-0 transition-all duration-300"></div>
             </div>
 
-            <p class="text-[10px] text-gray-400 mt-1">Alta Qualidade Preservada (Máx 5MB). PNG, JPG ou WEBP.</p>
+            <p class="text-[10px] text-gray-400 mt-1">PNG, JPG ou WEBP. Auto-compressão ativa.</p>
             <input type="hidden" id="url-${id}" value="${currentUrl}" />
           </div>
         </div>
@@ -38,13 +38,7 @@ export const ImageUpload = {
     `;
   },
 
-  async processImage(file) {
-    // If file is valid and under 5MB, we use it directly to preserve max quality
-    if (file.size <= 5 * 1024 * 1024) {
-       return file;
-    }
-
-    // If above 5MB, we perform high quality downscaling/compression
+  async compressImage(file) {
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
@@ -53,7 +47,7 @@ export const ImageUpload = {
         img.src = event.target.result;
         img.onload = () => {
           const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 1920;
+          const MAX_WIDTH = 1080;
           let width = img.width;
           let height = img.height;
 
@@ -69,7 +63,7 @@ export const ImageUpload = {
 
           canvas.toBlob((blob) => {
             resolve(blob);
-          }, 'image/jpeg', 0.92);
+          }, 'image/jpeg', 0.75);
         };
       };
     });
@@ -88,26 +82,21 @@ export const ImageUpload = {
         const file = e.target.files[0];
         if (!file) return;
 
-        if (file.size > 10 * 1024 * 1024) {
-           Toast.show("Arquivo muito grande. Máximo 10MB.", "error");
-           return;
-        }
-
         loading.classList.remove('hidden');
         loading.classList.add('flex');
         progressContainer.classList.remove('hidden');
         progressBar.style.width = '20%';
 
         try {
-          const finalFile = await this.processImage(file);
+          const compressedBlob = await this.compressImage(file);
           progressBar.style.width = '50%';
 
-          const fileName = `${Math.random().toString(36).substring(2)}.${file.name.split('.').pop()}`;
+          const fileName = `${Math.random().toString(36).substring(2)}.jpg`;
           const filePath = `uploads/${fileName}`;
 
           const { error: uploadError } = await supabase.storage
             .from('loja')
-            .upload(filePath, finalFile);
+            .upload(filePath, compressedBlob);
 
           if (uploadError) throw uploadError;
 
