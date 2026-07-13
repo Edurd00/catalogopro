@@ -1,7 +1,6 @@
 import { supabase } from '../../config/supabase.js';
 import { injectTheme } from '../../config/theme.js';
 import { ImageUpload } from '../../components/ImageUpload.js';
-import { ConfirmModal } from '../../components/ConfirmModal.js';
 import { Toast } from '../../components/Toast.js';
 
 export const Dashboard = {
@@ -131,7 +130,7 @@ export const Dashboard = {
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-lojaPrimaria" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                             Identidade da Loja
                           </span>
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 transition-transform \text{window.adminConfigExpanded === 'identity' ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 transition-transform ${window.adminConfigExpanded === 'identity' ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
                         <div class="${window.adminConfigExpanded === 'identity' ? 'block' : 'hidden'} p-4 space-y-4 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
                           <div>
@@ -167,7 +166,7 @@ export const Dashboard = {
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-lojaPrimaria" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.172-1.172a4 4 0 115.656 5.656l-1.172 1.172" /></svg>
                             Cores & Estilo
                           </span>
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 transition-transform \text{window.adminConfigExpanded === 'style' ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 transition-transform ${window.adminConfigExpanded === 'style' ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
                         <div class="${window.adminConfigExpanded === 'style' ? 'block' : 'hidden'} p-4 space-y-4 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
                           <div class="grid grid-cols-2 gap-4">
@@ -196,7 +195,7 @@ export const Dashboard = {
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-lojaPrimaria" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                             Contato & Redes Sociais
                           </span>
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 transition-transform \text{window.adminConfigExpanded === 'social' ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 transition-transform ${window.adminConfigExpanded === 'social' ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
                         <div class="${window.adminConfigExpanded === 'social' ? 'block' : 'hidden'} p-4 space-y-4 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
                           <div>
@@ -221,7 +220,7 @@ export const Dashboard = {
                       </div>
                     </div>
 
-                    <button type="submit" id="btn-save-tenant" class="w-full bg-lojaPrimaria text-white font-black py-4 rounded-2xl shadow-lg shadow-lojaPrimaria/20 hover:scale-[1.01] active:scale-[0.99] transition flex items-center justify-center gap-2 uppercase text-xs tracking-widest group disabled:opacity-70 disabled:cursor-not-allowed">
+                    <button type="submit" id="btn-save-tenant" class="w-full bg-lojaPrimaria text-white font-black py-4 rounded-2xl shadow-lg shadow-lojaPrimaria/20 hover:scale-[1.01] active:scale-[0.99] transition flex items-center justify-center gap-2 uppercase text-xs tracking-widest">
                       <span id="btn-save-text">Salvar Alterações</span>
                       <div id="btn-save-loader" class="hidden animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
                     </button>
@@ -295,9 +294,8 @@ export const Dashboard = {
                         <textarea id="prod-image-urls" class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl p-3 text-sm font-bold text-gray-900 dark:text-gray-100 h-20" placeholder="https://exemplo.com/foto2.jpg, https://exemplo.com/foto3.jpg"></textarea>
                       </div>
                     </div>
-                    <button type="submit" id="btn-prod-submit" class="md:col-span-2 bg-green-600 text-white font-black py-4 rounded-2xl shadow-lg hover:bg-green-700 transition uppercase text-xs tracking-widest disabled:opacity-70 disabled:cursor-not-allowed">
-                       <span id="btn-prod-text">Adicionar ao Catálogo</span>
-                       <div id="btn-prod-loader" class="hidden animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                    <button type="submit" id="btn-prod-submit" class="md:col-span-2 bg-green-600 text-white font-black py-4 rounded-2xl shadow-lg hover:bg-green-700 transition uppercase text-xs tracking-widest">
+                       Adicionar ao Catálogo
                     </button>
                   </form>
                 </div>
@@ -470,6 +468,19 @@ export const Dashboard = {
             </div>
           </div>
         </div>
+
+        <div id="delete-modal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 hidden">
+          <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+          <div class="bg-white dark:bg-gray-900 w-full max-w-sm rounded-[2rem] p-8 relative shadow-2xl animate-in fade-in zoom-in duration-200 border border-gray-100 dark:border-gray-800">
+            <h3 class="text-center text-xl font-black text-gray-900 dark:text-gray-100 mb-2">Confirmar Exclusão</h3>
+            <p class="text-center text-gray-500 text-xs font-bold uppercase tracking-widest mb-2">Deseja excluir <span id="delete-item-name" class="text-red-500"></span>?</p>
+            <p class="text-center text-red-500 text-[9px] font-black uppercase tracking-[0.2em] mb-8 opacity-50">Esta ação é irreversível</p>
+            <div class="grid grid-cols-2 gap-4">
+              <button id="btn-cancel-delete" class="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 font-black py-4 rounded-2xl text-[10px] uppercase tracking-widest hover:bg-gray-200 transition">Cancelar</button>
+              <button id="btn-confirm-delete" class="bg-red-50 text-white font-black py-4 rounded-2xl text-[10px] uppercase tracking-widest hover:bg-red-600 transition shadow-lg shadow-red-500/20">Sim, Excluir</button>
+            </div>
+          </div>
+        </div>
       `;
     } catch (err) {
       return `<div class="p-20 text-center font-black uppercase text-red-500">Erro de Conexão</div>`;
@@ -487,14 +498,12 @@ export const Dashboard = {
     ImageUpload.bindEvents('prod', (url) => { if(!url) container.querySelector('#url-prod').value = ''; });
 
     window.removeTenantMedia = async (type) => {
-       if (await ConfirmModal.show('Remover Imagem?', 'Deseja realmente apagar esta imagem das configurações?', 'Sim, Remover')) {
-          const field = type === 'logo' ? 'logo_url' : 'hero_image_url';
-          const { data: tenant } = await supabase.from('tenant_settings').select('id').maybeSingle();
-          if (tenant) {
-             const { error } = await supabase.from('tenant_settings').update({ [field]: null }).eq('id', tenant.id);
-             if (error) Toast.show("Erro ao remover: " + error.message, "error");
-             else { Toast.show("Imagem removida com sucesso!"); onRefresh(); }
-          }
+       const field = type === 'logo' ? 'logo_url' : 'hero_image_url';
+       const { data: tenant } = await supabase.from('tenant_settings').select('id').maybeSingle();
+       if (tenant) {
+          await supabase.from('tenant_settings').update({ [field]: null }).eq('id', tenant.id);
+          Toast.show("Imagem removida com sucesso!");
+          onRefresh();
        }
     };
 
@@ -571,13 +580,13 @@ export const Dashboard = {
 
           if (!error) {
             injectTheme(updatedData.primary_color, updatedData.secondary_color);
-            Toast.show("✨ Sucesso! Alterações salvas com sucesso.");
+            Toast.show("Configurações salvas!");
             onRefresh();
           } else {
             throw error;
           }
         } catch (err) {
-          Toast.show("❌ Erro ao salvar: " + err.message, "error");
+          Toast.show("Erro ao salvar: " + err.message, "error");
           btnSave.disabled = false;
           btnText.classList.remove('hidden');
           btnLoader.classList.add('hidden');
@@ -585,25 +594,39 @@ export const Dashboard = {
       };
     }
 
+    const deleteModal = container.querySelector('#delete-modal');
+    const deleteItemName = container.querySelector('#delete-item-name');
+    const btnCancelDelete = container.querySelector('#btn-cancel-delete');
+    const btnConfirmDelete = container.querySelector('#btn-confirm-delete');
+    let itemToDelete = null;
+
     window.toggleAdminProduct = (id) => {
       window.currentExpandedId = window.currentExpandedId === id ? null : id;
       onRefresh();
     };
 
     window.deleteAdminProduct = async (id) => {
-       if (await ConfirmModal.show('Excluir Produto?', 'Tem certeza que deseja apagar este item permanentemente?', 'Sim, Excluir')) {
-          const { error } = await supabase.from('products').delete().eq('id', id);
-          if (error) Toast.show("❌ Erro ao deletar: " + error.message, "error");
-          else { Toast.show("Produto excluído!"); onRefresh(); }
-       }
+      const { data: prod } = await supabase.from('products').select('title').eq('id', id).single();
+      itemToDelete = id;
+      deleteItemName.innerText = prod?.title || "este produto";
+      deleteModal.classList.remove('hidden');
     };
 
     window.deleteCategory = async (id) => {
-       if (await ConfirmModal.show('Excluir Categoria?', 'Esta ação removerá a categoria. Produtos sem categoria serão listados como Geral.', 'Sim, Excluir')) {
+       if (confirm('Deseja realmente excluir esta categoria?')) {
           const { error } = await supabase.from('categories').delete().eq('id', id);
-          if (error) Toast.show("❌ Erro ao excluir: " + error.message, "error");
+          if (error) Toast.show("Erro ao excluir: " + error.message, "error");
           else { Toast.show("Categoria removida"); onRefresh(); }
        }
+    };
+
+    btnCancelDelete.onclick = () => deleteModal.classList.add('hidden');
+    btnConfirmDelete.onclick = async () => {
+      const { error } = await supabase.from('products').delete().eq('id', itemToDelete);
+      if (error) Toast.show("Erro ao deletar: " + error.message, "error");
+      else Toast.show("Produto excluído!");
+      deleteModal.classList.add('hidden');
+      onRefresh();
     };
 
     window.cloneAdminProduct = async (id) => {
@@ -686,21 +709,13 @@ export const Dashboard = {
     if (productForm) {
       productForm.onsubmit = async (e) => {
         e.preventDefault();
-        const btnSubmit = container.querySelector('#btn-prod-submit');
-        const btnText = container.querySelector('#btn-prod-text');
-        const btnLoader = container.querySelector('#btn-prod-loader');
-
-        btnSubmit.disabled = true;
-        btnText.classList.add('hidden');
-        btnLoader.classList.remove('hidden');
-
         try {
           let categoryId = categorySelect.value;
           const productId = container.querySelector('#product-id').value;
 
           if (categoryId === 'new') {
             const catName = newCategoryInput.value;
-            const slug = catName.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').replace(/[^a-z0-9 -]/g, '').replace(/\\s+/g, '-');
+            const slug = catName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9 -]/g, '').replace(/\s+/g, '-');
             const { data: newCat, error: catErr } = await supabase.from('categories').insert({ name: catName, slug }).select().single();
             if (catErr) throw catErr;
             categoryId = newCat.id;
@@ -708,6 +723,7 @@ export const Dashboard = {
 
           const priceVal = container.querySelector('#prod-price').value;
           const promoVal = container.querySelector('#prod-promo').value;
+
           const extraUrls = container.querySelector('#prod-image-urls').value.split(',').map(s => s.trim()).filter(s => s);
           const mainUrl = container.querySelector('#url-prod').value;
 
@@ -734,7 +750,7 @@ export const Dashboard = {
 
           if (error) throw error;
 
-          Toast.show("✨ Sucesso! Produto salvo no catálogo.");
+          Toast.show("Produto salvo no catálogo!");
           productForm.reset();
           container.querySelector('#prod-image-urls').value = '';
           container.querySelector('#product-id').value = '';
@@ -757,10 +773,7 @@ export const Dashboard = {
 
           onRefresh();
         } catch (err) {
-          Toast.show("❌ Erro ao salvar produto: " + err.message, "error");
-          btnSubmit.disabled = false;
-          btnText.classList.remove('hidden');
-          btnLoader.classList.add('hidden');
+          Toast.show("Erro ao salvar produto: " + err.message, "error");
         }
       };
     }
