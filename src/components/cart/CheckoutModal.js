@@ -2,17 +2,19 @@ import { appContext } from '../../context/AppContext.js';
 
 export const CheckoutModal = {
   render() {
-    const cartItems = appContext.getState().cart || [];
+    const { cart: cartItems, tenant } = appContext.getState();
 
     // Função de formatação para garantir R$ e casas decimais
     const formatCurrency = (value) => 
       new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 
-    // 1. Cálculo do frete (pega o maior valor entre os itens)
-    const deliveryFee = cartItems.reduce((max, item) => {
+    // 1. Cálculo unificado do frete (máximo entre os produtos ou taxa da loja)
+    const tenantFee = tenant?.delivery_fee ? parseFloat(tenant.delivery_fee) : 0;
+    const maxProductShipping = cartItems.reduce((max, item) => {
       const itemShipping = parseFloat(item.product?.shipping_fee || 0);
       return itemShipping > max ? itemShipping : max;
     }, 0);
+    const deliveryFee = maxProductShipping > 0 ? maxProductShipping : tenantFee;
 
     // 2. Cálculo do subtotal (buscando dentro de item.product)
     const totalCartAmount = cartItems.reduce((sum, item) => {

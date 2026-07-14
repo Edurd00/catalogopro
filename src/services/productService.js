@@ -24,8 +24,7 @@ export const productService = {
       } else if (orderBy === 'desc') {
         query = query.order('price', { ascending: false });
       } else if (orderBy === 'featured') {
-        query = query.order('is_featured', { ascending: false })
-                     .order('created_at', { ascending: false });
+        query = query.order('created_at', { ascending: false });
       }
 
       const { data, error } = await query;

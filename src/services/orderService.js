@@ -7,10 +7,12 @@ export const orderService = {
       const formatCurrency = (value) =>
         new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 
-      const deliveryFee = cartItems.reduce((max, item) => {
+      const tenantFee = tenant?.delivery_fee ? Number(tenant.delivery_fee) : 0;
+      const maxProductShipping = cartItems.reduce((max, item) => {
         const rawShipping = item.shipping_fee ?? item.product?.shipping_fee ?? 0;
         return rawShipping > max ? rawShipping : max;
       }, 0);
+      const deliveryFee = maxProductShipping > 0 ? maxProductShipping : tenantFee;
 
       const subtotal = cartItems.reduce((sum, item) => {
         const prod = item.product || item;
@@ -28,7 +30,8 @@ export const orderService = {
           delivery_address: deliveryAddress,
           payment_method: paymentMethod,
           total_amount: totalAmount,
-          status: 'pending'
+          status: 'pending',
+          tenant_id: tenant?.id || null
         })
         .select().single();
 

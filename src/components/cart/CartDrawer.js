@@ -17,7 +17,12 @@ export const CartDrawer = {
       return sum + (price * item.quantity);
     }, 0);
 
-    const deliveryFee = tenant?.delivery_fee ? Number(tenant.delivery_fee) : 0;
+    const tenantFee = tenant?.delivery_fee ? Number(tenant.delivery_fee) : 0;
+    const maxProductShipping = cart.reduce((max, item) => {
+      const itemShipping = Number(item.product?.shipping_fee || 0);
+      return itemShipping > max ? itemShipping : max;
+    }, 0);
+    const deliveryFee = maxProductShipping > 0 ? maxProductShipping : tenantFee;
     const total = subtotal + deliveryFee;
 
     // Avalia o estado de abertura atual para injetar as classes corretas do Tailwind sem fechar
