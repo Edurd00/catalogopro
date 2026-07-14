@@ -9,13 +9,18 @@ export const Dashboard = {
       // 1. Initialize admin tab
       window.currentAdminTab = window.currentAdminTab || 'overview';
 
-      // 2. Fetch tenant settings
-      const { data: tenantData, error: tenantError } = await supabase
-        .from('tenant_settings')
-        .select('*')
-        .maybeSingle();
+      // 2. Fetch tenant settings — filtered by owner_id for merchants
+      const { data: { session } } = await supabase.auth.getSession();
+      let tenantQuery = supabase.from('tenant_settings').select('*');
+      if (session?.user?.id) {
+        tenantQuery = tenantQuery.eq('owner_id', session.user.id);
+      }
+      const { data: tenantData } = await tenantQuery.maybeSingle();
 
       const tenant = tenantData || {};
+      // Niche-specific option labels
+      const opt1Label = tenant.option1_label || 'Cores';
+      const opt2Label = tenant.option2_label || 'Tamanhos';
       const isConfigured = tenant.store_name && tenant.logo_url && tenant.whatsapp_number;
 
       // 3. Fetch data filtered by tenant_id (or unassigned items)
@@ -374,12 +379,12 @@ export const Dashboard = {
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                         <label class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-1.5">Cores (Preto, Branco, Azul)</label>
+                         <label class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-1.5">${opt1Label}</label>
                          <input type="text" id="prod-colors" class="w-full bg-gray-50 dark:bg-gray-955 border-none rounded-xl p-3.5 text-xs font-bold text-gray-900 dark:text-gray-100" placeholder="Separe por vírgula" />
                          <div id="colors-preview" class="flex flex-wrap gap-1 mt-1.5 min-h-[16px]"></div>
                       </div>
                       <div>
-                         <label class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-1.5">Tamanhos (P, M, G, GG)</label>
+                         <label class="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-1.5">${opt2Label}</label>
                          <input type="text" id="prod-attributes" class="w-full bg-gray-50 dark:bg-gray-955 border-none rounded-xl p-3.5 text-xs font-bold text-gray-900 dark:text-gray-100" placeholder="Separe por vírgula" />
                          <div id="attrs-preview" class="flex flex-wrap gap-1 mt-1.5 min-h-[16px]"></div>
                       </div>

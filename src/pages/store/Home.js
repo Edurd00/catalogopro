@@ -1,5 +1,7 @@
 import { supabase } from '../../config/supabase.js';
 import { ProductDetailsModal } from '../../components/product/ProductDetailsModal.js';
+import { Toast } from '../../components/Toast.js';
+
 
 export const Home = {
   selectedCategoryId: null,
@@ -8,28 +10,34 @@ export const Home = {
 
   async render() {
     try {
-      // 1. Fetch tenant settings
-      const { data: tenantData } = await supabase
-        .from('tenant_settings')
-        .select('*')
-        .maybeSingle();
+      // 1. Fetch tenant settings by slug from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const storeSlug = urlParams.get('store');
+
+      let tenantQuery = supabase.from('tenant_settings').select('*');
+      if (storeSlug) {
+        tenantQuery = tenantQuery.eq('slug', storeSlug);
+      }
+      const { data: tenantData } = await tenantQuery.maybeSingle();
 
       const tenant = tenantData || {};
+
+      // Niche-specific option labels
+      const opt1Label = tenant.option1_label || 'Opções';
+      const opt2Label = tenant.option2_label || 'Variações';
 
       // If tenant is not set up, show onboarding screen instead of a broken page
       if (!tenant.store_name) {
         return `
           <div class="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-950 p-6 text-center transition-colors duration-300">
             <div class="bg-white dark:bg-gray-900 p-8 rounded-[2rem] shadow-xl max-w-md border border-gray-100 dark:border-gray-800 space-y-6">
-              <div class="w-16 h-16 bg-blue-50 dark:bg-blue-950 text-blue-500 rounded-2xl flex items-center justify-center mx-auto">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-              </div>
+              <div class="w-16 h-16 bg-violet-50 dark:bg-violet-950 text-violet-500 rounded-2xl flex items-center justify-center mx-auto text-4xl">🏪</div>
               <div class="space-y-2">
-                <h2 class="text-2xl font-black text-gray-905 tracking-tight dark:text-white">Vitrine Pendente</h2>
-                <p class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">A plataforma está online, mas nenhuma loja foi configurada ainda.</p>
+                <h2 class="text-2xl font-black text-gray-900 tracking-tight dark:text-white">Loja não encontrada</h2>
+                <p class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">${storeSlug ? `Nenhuma loja com o slug "${storeSlug}" foi encontrada.` : 'Nenhuma loja configurada ainda.'}</p>
               </div>
-              <a href="/?page=admin" class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-2xl text-xs uppercase tracking-widest transition shadow-lg shadow-blue-500/20">
-                Acessar Painel do Admin
+              <a href="/" class="block w-full bg-violet-600 hover:bg-violet-700 text-white font-black py-4 rounded-2xl text-xs uppercase tracking-widest transition shadow-lg shadow-violet-500/20">
+                Ver todas as lojas
               </a>
             </div>
           </div>
@@ -41,19 +49,18 @@ export const Home = {
       let categoriesQuery = supabase.from('categories').select('*').order('name', { ascending: true });
 
       if (tenant.id) {
-        productsQuery = productsQuery.or(`tenant_id.eq.${tenant.id},tenant_id.is.null`);
-        categoriesQuery = categoriesQuery.or(`tenant_id.eq.${tenant.id},tenant_id.is.null`);
+        productsQuery = productsQuery.eq('tenant_id', tenant.id);
+        categoriesQuery = categoriesQuery.eq('tenant_id', tenant.id);
       }
 
-      const [productsRes, categoriesRes] = await Promise.all([
-        productsQuery,
-        categoriesQuery
-      ]);
-
-      if (productsRes.error) console.error("Erro produtos:", productsRes.error);
-      if (categoriesRes.error) console.error("Erro categorias:", categoriesRes.error);
+      const [productsRes, categoriesRes] = await Promise.all([productsQuery, categoriesQuery]);
+      if (productsRes.error) console.error('Erro produtos:', productsRes.error);
+      if (categoriesRes.error) console.error('Erro categorias:', categoriesRes.error);
 
       this.allProducts = productsRes.data || [];
+      this.tenant = tenant;
+      this.opt1Label = opt1Label;
+      this.opt2Label = opt2Label;
       const categories = categoriesRes.data || [];
 
       // Hero banner styling configuration
@@ -293,10 +300,12 @@ export const Home = {
         const prod = this.allProducts.find(p => p.id === card.dataset.id);
         const modalContainer = document.getElementById('product-modal-container');
         if (modalContainer && prod) {
-          modalContainer.innerHTML = ProductDetailsModal.render(prod);
+          const opt1Label = this.opt1Label || 'Opções';
+          const opt2Label = this.opt2Label || 'Variações';
+          modalContainer.innerHTML = ProductDetailsModal.render(prod, { opt1Label, opt2Label });
           ProductDetailsModal.bindEvents(modalContainer, prod, (detail) => {
             window.dispatchEvent(new CustomEvent('global:add-to-cart', { detail: { id: prod.id, ...detail } }));
-          });
+          }, { opt1Label, opt2Label });
         }
       };
     });
