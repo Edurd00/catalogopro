@@ -44,12 +44,19 @@ async function mountApp() {
       console.warn('Supabase Auth indisponível:', e.message);
     }
 
-    if (!session) {
+    let localAuth = null;
+    try {
+      const raw = localStorage.getItem('admin_auth');
+      if (raw) localAuth = JSON.parse(raw);
+    } catch (e) {}
+
+    // Permite login via Supabase ou via sessão local de portfólio
+    if (!session && !localAuth?.authenticated) {
       window.location.search = '?page=login';
       return;
     }
 
-    const isSuperAdmin = session.user?.email === SUPER_ADMIN_EMAIL;
+    const isSuperAdmin = session?.user?.email === SUPER_ADMIN_EMAIL || localAuth?.role === 'superadmin';
 
     if (isSuperAdmin) {
       async function renderSuperAdmin() {
@@ -108,6 +115,15 @@ async function mountStorefront(appDiv) {
         </div>
         
         <div class="flex items-center gap-3">
+          <!-- Link Painel Admin -->
+          <a href="/?page=admin" class="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:text-lojaPrimaria dark:hover:text-white px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            Painel Admin
+          </a>
+
           <!-- Alternador de Dark Mode -->
           <button id="theme-toggle-btn" class="w-10 h-10 rounded-2xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition" title="Alternar Modo Escuro">
             <svg id="theme-icon-sun" class="w-5 h-5 hidden dark:block text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
