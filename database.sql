@@ -112,9 +112,9 @@ CREATE POLICY "Admin Update Orders" ON orders FOR UPDATE TO authenticated USING 
 CREATE POLICY "Public Insert Orders" ON orders FOR INSERT WITH CHECK (true);
 CREATE POLICY "Public Insert Order Items" ON order_items FOR INSERT WITH CHECK (true);
 
-==========================================
-MIGRATIONS (For existing databases)
-==========================================
+-- ==========================================
+-- MIGRATIONS (For existing databases)
+-- ==========================================
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='tenant_settings' AND column_name='is_open') THEN
@@ -129,7 +129,7 @@ BEGIN
         ALTER TABLE products ADD COLUMN stock INTEGER DEFAULT 10;
     END IF;
 
-    Update order status check constraint if necessary
+    -- Update order status check constraint if necessary
     ALTER TABLE orders DROP CONSTRAINT IF EXISTS orders_status_check;
     ALTER TABLE orders ADD CONSTRAINT orders_status_check CHECK (status IN ('pending', 'preparing', 'shipped', 'cancelled'));
 END $$;

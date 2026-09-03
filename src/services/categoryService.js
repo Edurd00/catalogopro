@@ -1,19 +1,13 @@
-import { supabase } from '../config/supabase.js';
+import { db } from '../config/db.js';
 
 export const categoryService = {
   /**
-   * Retorna todas as categorias marcadas como ativas no sistema
+   * Retorna todas as categorias do catálogo
    */
   async getAllActive() {
     try {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .eq('active', true)
-        .order('name', { ascending: true });
-
-      if (error) throw error;
-      return data || [];
+      const categories = await db.getCategories();
+      return categories || [];
     } catch (error) {
       console.error('Erro no categoryService.getAllActive:', error.message);
       return [];

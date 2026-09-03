@@ -24,7 +24,7 @@ export const ProductDetail = {
       <div class="container mx-auto px-4 max-w-5xl py-8">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
           <div class="w-full bg-gray-50 rounded-xl overflow-hidden aspect-square flex items-center justify-center">
-            <img src="${product.image_url || 'https://via.placeholder.com/600'}" alt="${product.title}" class="w-full h-full object-cover" />
+            <img src="${product.image_url || 'https://via.placeholder.com/600'}" alt="${product.name || product.title}" class="w-full h-full object-cover" />
           </div>
 
           <div class="flex flex-col justify-between">
@@ -32,7 +32,7 @@ export const ProductDetail = {
               <span class="text-xs font-semibold uppercase tracking-wider text-lojaPrimaria mb-1 block">
                 ${product.categories?.name || 'Geral'}
               </span>
-              <h1 class="text-3xl font-bold text-gray-900 mb-2">${product.title}</h1>
+              <h1 class="text-3xl font-bold text-gray-900 mb-2">${product.name || product.title}</h1>
               <p class="text-gray-600 text-sm leading-relaxed mb-6">${product.description || 'Sem descrição.'}</p>
               
               <div class="mb-6 p-4 bg-gray-50 rounded-xl">

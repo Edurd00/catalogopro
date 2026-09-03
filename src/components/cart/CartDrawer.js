@@ -74,7 +74,7 @@ export const CartDrawer = {
                     </div>
                     <div class="flex-grow flex flex-col justify-between py-0.5">
                       <div>
-                        <h4 class="text-sm font-bold text-gray-900 line-clamp-1">${item.product.title}</h4>
+                        <h4 class="text-sm font-bold text-gray-900 line-clamp-1">${item.product.name || item.product.title}</h4>
                         ${attrsText ? `<p class="text-[10px] text-lojaPrimaria font-black uppercase tracking-widest mt-1">${attrsText}</p>` : ''}
                       </div>
                       <div class="flex justify-between items-center mt-2">

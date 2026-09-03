@@ -85,7 +85,7 @@ export const ProductDetailsModal = {
                   ${product.categories?.name || 'Geral'}
                 </span>
                 <h2 class="text-xl sm:text-2xl font-black text-gray-900 dark:text-white leading-tight tracking-tight">
-                  ${product.title}
+                  ${product.name || product.title}
                 </h2>
                 <div class="flex items-baseline gap-3 pt-1">
                   <span class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white">
@@ -98,6 +98,14 @@ export const ProductDetailsModal = {
                     </span>
                   ` : ''}
                 </div>
+                ${product.stock_quantity !== undefined ? `
+                  <div class="pt-1">
+                    <span class="inline-flex items-center gap-1.5 text-[11px] font-bold ${product.stock_quantity > 0 ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40' : 'text-red-500 bg-red-50 dark:bg-red-950/40'} px-2.5 py-1 rounded-full">
+                      <span class="w-1.5 h-1.5 rounded-full ${product.stock_quantity > 0 ? 'bg-emerald-500' : 'bg-red-500'}"></span>
+                      ${product.stock_quantity > 0 ? `${product.stock_quantity} unidades em estoque` : 'Esgotado'}
+                    </span>
+                  </div>
+                ` : ''}
               </div>
 
               <!-- Description -->
@@ -308,10 +316,11 @@ export const ProductDetailsModal = {
     // ── Buy via WhatsApp ────────────────────────────────────────────
     buyNowBtn?.addEventListener('click', () => {
       const tenant = appContext.getState().tenant;
-      const phone = tenant?.whatsapp_number?.replace(/\D/g, '');
-      if (!phone) { Toast.show('WhatsApp não configurado', 'error'); return; }
+      const rawPhone = tenant?.whatsapp_number || '5511999999999';
+      const phone = rawPhone.replace(/\D/g, '');
 
-      const parts = [`Olá! Tenho interesse no produto: *${product.title}*`];
+      const productName = product.name || product.title || 'Produto';
+      const parts = [`Olá! Tenho interesse no produto: *${productName}*`];
       if (selectedColor) parts.push(`${opt1Label}: ${selectedColor}`);
       if (selectedAttr) parts.push(`${opt2Label}: ${selectedAttr}`);
       parts.push(`Quantidade: ${qtyInput.value}`);
