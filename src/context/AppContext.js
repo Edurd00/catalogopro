@@ -34,6 +34,20 @@ class AppState {
    */
   async initTenant() {
     try {
+      // Se não há cliente Supabase ativo, define a loja padrão imediatamente
+      if (!supabase) {
+        if (!this.state.tenant) {
+          this.state.tenant = {
+            store_name: 'Catálogo Pro',
+            primary_color: '#3b82f6',
+            secondary_color: '#1e3a8a',
+            whatsapp_number: '5511999999999'
+          };
+          injectTheme(this.state.tenant.primary_color, this.state.tenant.secondary_color);
+        }
+        return;
+      }
+
       const urlParams = new URLSearchParams(window.location.search);
       const storeSlug = urlParams.get('store');
       const isAdmin = urlParams.get('page') === 'admin';
@@ -49,7 +63,6 @@ class AppState {
         if (session?.user) {
           const SUPER_ADMIN_EMAIL = import.meta.env.VITE_SUPER_ADMIN_EMAIL || 'admin@catalogopro.com';
           if (session.user.email === SUPER_ADMIN_EMAIL) {
-            // Super admin: no tenant filter; resolved in Dashboard
             return;
           }
           query = query.eq('owner_id', session.user.id).maybeSingle();
@@ -57,14 +70,13 @@ class AppState {
           return;
         }
       } else {
-        // Portal mode – no tenant
         return;
       }
 
       const { data, error } = await query;
 
       if (error) {
-        console.error('Erro ao carregar tenant:', error.message);
+        console.warn('Erro ao carregar tenant:', error.message);
         return;
       }
 
@@ -74,7 +86,7 @@ class AppState {
         this.notify();
       }
     } catch (err) {
-      console.error('Erro ao inicializar tenant:', err.message);
+      console.warn('Erro ao inicializar tenant:', err.message);
     }
   }
 
