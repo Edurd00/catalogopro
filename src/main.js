@@ -1,20 +1,14 @@
 import './styles/index.css';
 import { appContext } from './context/AppContext.js';
 import { Home } from './pages/store/Home.js';
-import { Portal } from './pages/saas/Portal.js';
 import { CartDrawer } from './components/cart/CartDrawer.js';
 import { CheckoutModal } from './components/cart/CheckoutModal.js';
 import { orderService } from './services/orderService.js';
 import { productService } from './services/productService.js';
 import { Dashboard } from './pages/admin/Dashboard.js';
-import { SuperAdminDashboard } from './pages/admin/SuperAdminDashboard.js';
 import { Login } from './pages/auth/Login.js';
-import { supabase } from './config/supabase.js';
-
-const SUPER_ADMIN_EMAIL = import.meta.env.VITE_SUPER_ADMIN_EMAIL || 'admin@catalogopro.com';
 
 async function mountApp() {
-  // Inicializa tema salvo
   if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
     document.documentElement.classList.add('dark');
   }
@@ -34,72 +28,44 @@ async function mountApp() {
 
   // ─── ADMIN PAGE ──────────────────────────────────────────────────────────────
   if (currentPage === 'admin') {
-    let session = null;
-    try {
-      if (supabase && import.meta.env.VITE_SUPABASE_URL) {
-        const authRes = await supabase.auth.getSession();
-        session = authRes.data?.session;
-      }
-    } catch (e) {
-      console.warn('Supabase Auth indisponível:', e.message);
-    }
-
     let localAuth = null;
     try {
       const raw = localStorage.getItem('admin_auth');
       if (raw) localAuth = JSON.parse(raw);
     } catch (e) {}
 
-    // Permite login via Supabase ou via sessão local de portfólio
-    if (!session && !localAuth?.authenticated) {
+    if (!localAuth?.authenticated) {
       window.location.search = '?page=login';
       return;
     }
 
-    const isSuperAdmin = session?.user?.email === SUPER_ADMIN_EMAIL || localAuth?.role === 'superadmin';
-
-    if (isSuperAdmin) {
-      async function renderSuperAdmin() {
-        appDiv.innerHTML = await SuperAdminDashboard.render();
-        SuperAdminDashboard.bindEvents(appDiv, () => renderSuperAdmin());
-      }
-      await renderSuperAdmin();
-    } else {
-      await appContext.initTenant();
-      async function renderAdmin() {
-        appDiv.innerHTML = await Dashboard.render();
-        Dashboard.bindEvents(appDiv, () => renderAdmin());
-      }
-      await renderAdmin();
+    await appContext.initStoreSettings();
+    async function renderAdmin() {
+      appDiv.innerHTML = await Dashboard.render();
+      Dashboard.bindEvents(appDiv, () => renderAdmin());
     }
+    await renderAdmin();
     return;
   }
 
-  // ─── SAAS PORTAL OPCIONAL (?page=portal) ─────────────────────────────────────
-  if (currentPage === 'portal') {
-    appDiv.innerHTML = await Portal.render();
-    Portal.bindEvents(appDiv);
-    return;
-  }
-
-  // ─── VITRINE / CATÁLOGO PRINCIPAL (Padrão para Portfólio) ───────────────────
-  await appContext.initTenant();
+  // ─── VITRINE / CATÁLOGO PRINCIPAL ─────────────────────────────────────────────
+  await appContext.initStoreSettings();
   await mountStorefront(appDiv);
 }
 
 async function mountStorefront(appDiv) {
-  const tenantData = appContext.getState().tenant || {
+  const storeSettings = appContext.getState().storeSettings || {
     store_name: 'Catálogo Pro',
     logo_url: null,
     primary_color: '#3b82f6'
   };
 
-  const brandHeaderHTML = tenantData?.logo_url
-    ? `<img src="${tenantData.logo_url}" class="h-9 w-auto object-contain" alt="${tenantData.store_name || 'Logo'}" />`
+  const brandHeaderHTML = storeSettings?.logo_url
+    ? `<img src="${storeSettings.logo_url}" class="h-9 w-auto object-contain" alt="${storeSettings.store_name || 'Logo'}" />`
     : `
       <div class="flex items-center gap-2">
         <span class="w-8 h-8 rounded-xl bg-lojaPrimaria text-white flex items-center justify-center font-black text-sm shadow-md shadow-lojaPrimaria/30">CP</span>
-        <span class="text-lg md:text-xl font-black text-gray-900 dark:text-white uppercase tracking-tighter">${tenantData?.store_name || 'Catálogo Pro'}</span>
+        <span class="text-lg md:text-xl font-black text-gray-900 dark:text-white uppercase tracking-tighter">${storeSettings?.store_name || 'Catálogo Pro'}</span>
       </div>
     `;
 
@@ -152,7 +118,6 @@ async function mountStorefront(appDiv) {
     <div id="product-modal-container"></div>
   `;
 
-  // Listener para alternar Dark Mode
   const themeBtn = document.getElementById('theme-toggle-btn');
   if (themeBtn) {
     themeBtn.onclick = () => {
@@ -185,8 +150,8 @@ async function mountStorefront(appDiv) {
     
     checkoutContainer.innerHTML = CheckoutModal.render();
     CheckoutModal.bindEvents(checkoutContainer, async (formData) => {
-      const { tenant } = appContext.getState();
-      const res = await orderService.createOrder({ ...formData, cartItems: cart, tenant });
+      const { storeSettings } = appContext.getState();
+      const res = await orderService.createOrder({ ...formData, cartItems: cart, storeSettings });
       if (res.success) { 
         CheckoutModal.close(); 
         appContext.clearCart(); 
@@ -197,7 +162,6 @@ async function mountStorefront(appDiv) {
   homeContainer.innerHTML = await Home.render();
   Home.bindEvents(homeContainer);
 
-  // Escuta evento global de adicionar ao carrinho
   window.addEventListener('global:add-to-cart', async (e) => {
     const { id, quantity, size, color, option1, option2 } = e.detail;
     const product = await productService.getById(id);
