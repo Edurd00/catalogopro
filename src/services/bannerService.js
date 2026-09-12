@@ -1,19 +1,16 @@
-import { supabase } from '../config/supabase.js';
+import { dbService } from './dbService.js';
 
 export const bannerService = {
   /**
-   * Retorna todos os banners ativos para exibição na Home
+   * Retorna informações de banner da loja
    */
   async getActiveBanners() {
     try {
-      const { data, error } = await supabase
-        .from('banners')
-        .select('*')
-        .eq('active', true)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data || [];
+      const settings = await dbService.getStoreSettings();
+      if (settings && settings.banner_url) {
+        return [{ id: '1', image_url: settings.banner_url, active: true }];
+      }
+      return [];
     } catch (error) {
       console.error('Erro no bannerService.getActiveBanners:', error.message);
       return [];

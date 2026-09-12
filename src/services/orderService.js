@@ -1,83 +1,84 @@
 import { Toast } from '../components/Toast.js';
-import { supabase } from '../config/supabase.js';
+import { dbService } from './dbService.js';
 
 export const orderService = {
-  async createOrder({ customerName, customerPhone, deliveryAddress, paymentMethod, cartItems, tenant }) {
+  async getOrders() {
+    return await dbService.getOrders();
+  },
+
+  async updateStatus(id, status) {
+    return await dbService.updateOrderStatus(id, status);
+  },
+
+  async createOrder({ customerName, customerEmail, customerPhone, deliveryAddress, paymentMethod, notes, cartItems, storeSettings }) {
     try {
       const formatCurrency = (value) =>
         new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 
-      const tenantFee = tenant?.delivery_fee ? Number(tenant.delivery_fee) : 0;
-      const maxProductShipping = cartItems.reduce((max, item) => {
-        const rawShipping = item.shipping_fee ?? item.product?.shipping_fee ?? 0;
-        return rawShipping > max ? rawShipping : max;
-      }, 0);
-      const deliveryFee = maxProductShipping > 0 ? maxProductShipping : tenantFee;
-
-      const subtotal = cartItems.reduce((sum, item) => {
+      const subtotalAmount = cartItems.reduce((sum, item) => {
         const prod = item.product || item;
-        const price = prod.promo_price && Number(prod.promo_price) < Number(prod.price)
-          ? Number(prod.promo_price)
+        const price = prod.promotional_price && Number(prod.promotional_price) < Number(prod.price)
+          ? Number(prod.promotional_price)
           : Number(prod.price || 0);
-        return sum + (price * item.quantity);
+        return sum + (price * Number(item.quantity || 1));
       }, 0);
 
-      const totalAmount = subtotal + deliveryFee;
+      const totalAmount = subtotalAmount;
 
-      // Tenta persistir no banco de dados se a tabela existir
-      let orderId = 'ORD-' + Date.now();
+      // Persiste no banco Neon
+      let order = null;
       try {
-        if (supabase && import.meta.env.VITE_SUPABASE_URL) {
-          const { data: order, error: orderError } = await supabase
-            .from('orders')
-            .insert({
-              customer_name: customerName,
-              customer_phone: customerPhone,
-              delivery_address: deliveryAddress,
-              payment_method: paymentMethod,
-              total_amount: totalAmount,
-              status: 'pending',
-              tenant_id: tenant?.id || null
-            })
-            .select().single();
+        order = await dbService.createOrder({
+          customer_name: customerName,
+          customer_email: customerEmail || null,
+          customer_phone: customerPhone,
+          address: deliveryAddress || null,
+          total_amount: totalAmount,
+          status: 'pending',
+          payment_method: paymentMethod,
+          notes: notes || null
+        });
 
-          if (!orderError && order?.id) {
-            orderId = order.id;
-            const itemsToInsert = cartItems.map(item => {
-              const prod = item.product || item;
-              const unitPrice = prod.promo_price && Number(prod.promo_price) < Number(prod.price)
-                ? Number(prod.promo_price)
-                : Number(prod.price || 0);
-              return {
-                order_id: order.id,
-                product_id: prod.id,
-                quantity: item.quantity,
-                unit_price: unitPrice,
-                selected_attributes: item.selectedAttributes || {}
-              };
+        if (order && order.id) {
+          for (const item of cartItems) {
+            const prod = item.product || item;
+            const unitPrice = prod.promotional_price && Number(prod.promotional_price) < Number(prod.price)
+              ? Number(prod.promotional_price)
+              : Number(prod.price || 0);
+            const qty = Number(item.quantity || 1);
+            const subtotal = unitPrice * qty;
+            const prodName = prod.name || prod.product_name || prod.title || 'Produto';
+
+            await dbService.createOrderItem({
+              order_id: order.id,
+              product_id: prod.id || null,
+              product_name: prodName,
+              quantity: qty,
+              unit_price: unitPrice,
+              subtotal: subtotal
             });
-
-            await supabase.from('order_items').insert(itemsToInsert);
           }
         }
       } catch (dbErr) {
-        // Se as tabelas orders/order_items não existirem no Neon/Supabase, não bloqueia o WhatsApp
-        console.warn('Persistência opcional de pedido não concluída (tabelas orders podem não existir):', dbErr.message);
+        console.warn('Erro ao salvar pedido no banco de dados:', dbErr.message);
       }
+
+      const orderId = order?.id || 'ORD-' + Date.now();
 
       // Monta mensagem do WhatsApp
       let text = `*📦 NOVO PEDIDO RECEBIDO (#${orderId})*\n`;
       text += `----------------------------------------\n`;
       text += `*Cliente:* ${customerName}\n`;
       text += `*Telefone:* ${customerPhone}\n`;
+      if (customerEmail) text += `*E-mail:* ${customerEmail}\n`;
       text += `----------------------------------------\n`;
       text += `*🛒 ITENS DO PEDIDO:*\n`;
 
       cartItems.forEach(item => {
         const prod = item.product || item;
-        const productName = prod.name || prod.title || 'Produto';
-        const unitPrice = prod.promo_price && Number(prod.promo_price) < Number(prod.price)
-          ? Number(prod.promo_price)
+        const productName = prod.name || prod.product_name || prod.title || 'Produto';
+        const unitPrice = prod.promotional_price && Number(prod.promotional_price) < Number(prod.price)
+          ? Number(prod.promotional_price)
           : Number(prod.price || 0);
 
         text += `${item.quantity}x ${productName} - ${formatCurrency(unitPrice)}\n`;
@@ -87,16 +88,16 @@ export const orderService = {
 
       text += `----------------------------------------\n`;
       text += `*💰 RESUMO DOS VALORES:*\n`;
-      text += `Subtotal: ${formatCurrency(subtotal)}\n`;
-      text += `Taxa de Entrega: ${deliveryFee === 0 ? 'Grátis / A combinar' : formatCurrency(deliveryFee)}\n`;
+      text += `Subtotal: ${formatCurrency(subtotalAmount)}\n`;
       text += `*TOTAL DO PEDIDO: ${formatCurrency(totalAmount)}*\n`;
       text += `----------------------------------------\n`;
       text += `*📍 DADOS DE ENTREGA / PAGAMENTO:*\n`;
       text += `Forma de Pagamento: ${paymentMethod}\n`;
       text += `Tipo: ${deliveryAddress ? 'Delivery' : 'Retirada'}\n`;
       text += `Endereço: ${deliveryAddress || 'Retirada no Local'}\n`;
+      if (notes) text += `Observações: ${notes}\n`;
 
-      const rawPhone = tenant?.whatsapp_number || '5511999999999';
+      const rawPhone = storeSettings?.whatsapp_number || '5511999999999';
       const cleanPhone = rawPhone.replace(/\D/g, '');
       const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
 

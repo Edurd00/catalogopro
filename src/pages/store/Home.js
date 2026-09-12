@@ -2,63 +2,45 @@ import { ProductDetailsModal } from '../../components/product/ProductDetailsModa
 import { Toast } from '../../components/Toast.js';
 import { productService } from '../../services/productService.js';
 import { categoryService } from '../../services/categoryService.js';
-import { supabase } from '../../config/supabase.js';
+import { dbService } from '../../services/dbService.js';
 
 export const Home = {
   selectedCategoryId: null,
   searchQuery: '',
   allProducts: [],
   categories: [],
-  tenant: null,
+  storeSettings: null,
 
   async render() {
     try {
-      // 1. Tenta carregar tenant settings caso exista no Supabase ou use padrão profissional de portfólio
-      const urlParams = new URLSearchParams(window.location.search);
-      const storeSlug = urlParams.get('store');
-
-      let tenantData = null;
-      try {
-        if (supabase && import.meta.env.VITE_SUPABASE_URL) {
-          let tenantQuery = supabase.from('tenant_settings').select('*');
-          if (storeSlug) tenantQuery = tenantQuery.eq('slug', storeSlug);
-          const { data } = await tenantQuery.maybeSingle();
-          tenantData = data;
-        }
-      } catch (e) {
-        // Fallback silencioso para tenant padrão de portfólio
-      }
-
-      // Configuração padrão da loja para portfólio (visual impecável garantido)
-      const tenant = tenantData || {
-        store_name: 'Catálogo Pro',
-        hero_title: 'Catálogo Digital & Delivery',
-        hero_subtitle: 'Explore produtos exclusivos e finalize seu pedido diretamente pelo WhatsApp',
-        hero_image_url: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600&auto=format&fit=crop&q=80',
-        whatsapp_number: '5511999999999',
-        primary_color: '#3b82f6',
-        secondary_color: '#1e3a8a',
-        address: 'São Paulo, SP - Atendimento Online'
-      };
-
-      // 2. Busca produtos e categorias através da camada unificada (Neon / MockData)
-      const [products, categories] = await Promise.all([
-        productService.getProducts(),
+      // Load store settings and catalog data from Neon database
+      const [settings, products, categories] = await Promise.all([
+        dbService.getStoreSettings(),
+        productService.getProducts({ active: true }),
         categoryService.getAllActive()
       ]);
 
+      const storeSettings = settings || {
+        store_name: 'Catálogo Pro',
+        banner_url: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600&auto=format&fit=crop&q=80',
+        whatsapp_number: '5511999999999',
+        primary_color: '#3b82f6',
+        secondary_color: '#1e3a8a',
+        email: 'contato@catalogopro.com'
+      };
+
       this.allProducts = products || [];
       this.categories = categories || [];
-      this.tenant = tenant;
+      this.storeSettings = storeSettings;
 
       const formatCurrency = (value) =>
         new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 
-      const heroStyle = tenant.hero_image_url
-        ? `style="background: linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.85)), url('${tenant.hero_image_url}'); background-size: cover; background-position: center;"`
+      const bannerStyle = storeSettings.banner_url
+        ? `style="background: linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.85)), url('${storeSettings.banner_url}'); background-size: cover; background-position: center;"`
         : 'class="bg-gradient-to-br from-lojaPrimaria to-lojaSecundaria"';
 
-      const cleanPhone = (tenant.whatsapp_number || '5511999999999').replace(/\D/g, '');
+      const cleanPhone = (storeSettings.whatsapp_number || '5511999999999').replace(/\D/g, '');
       const whatsappFloatButton = `
         <a href="https://wa.me/${cleanPhone}?text=Ol%C3%A1!%20Gostaria%20de%20tirar%20uma%20d%C3%BAvida%20sobre%20o%20cat%C3%A1logo." target="_blank" class="fixed bottom-6 right-6 z-40 bg-[#25D366] text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-all duration-300 active:scale-95 group">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="currentColor" viewBox="0 0 24 24">
@@ -70,17 +52,17 @@ export const Home = {
 
       return `
         <!-- HERO BANNER -->
-        <section class="relative w-full h-[360px] md:h-[460px] flex items-center justify-center text-center px-4" ${heroStyle.startsWith('style') ? heroStyle : ''} ${heroStyle.startsWith('class') ? heroStyle : ''}>
+        <section class="relative w-full h-[360px] md:h-[460px] flex items-center justify-center text-center px-4" ${bannerStyle.startsWith('style') ? bannerStyle : ''} ${bannerStyle.startsWith('class') ? bannerStyle : ''}>
           <div class="max-w-4xl mx-auto space-y-4 relative z-10 text-white animate-in fade-in slide-in-from-bottom duration-700">
             <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white text-[10px] font-black uppercase tracking-[0.25em] px-4 py-1.5 rounded-full mb-2">
               <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-ping"></span>
               Vitrine Online • Catálogo Interativo
             </div>
             <h1 class="text-3xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight leading-tight">
-              ${tenant.hero_title || 'Catálogo Pro'}
+              ${storeSettings.store_name || 'Catálogo Pro'}
             </h1>
             <p class="text-sm md:text-lg font-medium opacity-90 max-w-2xl mx-auto leading-relaxed">
-              ${tenant.hero_subtitle || 'Escolha seus itens favoritos e finalize sua compra facilmente.'}
+              Explore nossa linha de produtos exclusivos e faça seu pedido diretamente pelo WhatsApp.
             </p>
           </div>
         </section>
@@ -132,21 +114,11 @@ export const Home = {
         <footer class="bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 pt-12 pb-20 mt-16">
           <div class="max-w-4xl mx-auto px-4 text-center space-y-6">
             <div class="space-y-2">
-              <h3 class="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">${tenant.store_name}</h3>
+              <h3 class="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">${storeSettings.store_name}</h3>
               <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed max-w-md mx-auto font-medium">
-                Catálogo digital otimizado de alta performance integrado ao PostgreSQL Neon e WhatsApp.
+                Catálogo digital otimizado de alta performance integrado diretamente ao Neon PostgreSQL.
               </p>
             </div>
-
-            ${tenant.address ? `
-              <div class="flex items-center justify-center gap-2 text-gray-400 text-xs">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <span>${tenant.address}</span>
-              </div>
-            ` : ''}
 
             <div class="flex items-center justify-center gap-6 text-xs font-black text-gray-400 uppercase tracking-widest pt-2">
               <a href="#" class="hover:text-lojaPrimaria transition">Início</a>
@@ -155,7 +127,7 @@ export const Home = {
             </div>
 
             <div class="pt-6 border-t border-gray-100 dark:border-gray-800 text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-              © ${new Date().getFullYear()} ${tenant.store_name} • Desenvolvido para Portfólio
+              © ${new Date().getFullYear()} ${storeSettings.store_name} • E-Commerce
             </div>
           </div>
         </footer>
@@ -185,7 +157,7 @@ export const Home = {
     if (this.searchQuery) {
       const query = this.searchQuery.toLowerCase().trim();
       filtered = filtered.filter(p => {
-        const name = (p.name || p.title || '').toLowerCase();
+        const name = (p.name || '').toLowerCase();
         const desc = (p.description || '').toLowerCase();
         return name.includes(query) || desc.includes(query);
       });
@@ -206,13 +178,13 @@ export const Home = {
     }
 
     return filtered.map(prod => {
-      const title = prod.name || prod.title || 'Produto';
+      const title = prod.name || 'Produto';
       const price = Number(prod.price);
-      const promoPrice = prod.promo_price ? Number(prod.promo_price) : null;
+      const promoPrice = prod.promotional_price ? Number(prod.promotional_price) : null;
       const hasDiscount = promoPrice && promoPrice < price;
       const discountPercentage = hasDiscount ? Math.round(((price - promoPrice) / price) * 100) : 0;
       const displayPrice = hasDiscount ? promoPrice : price;
-      const isOutOfStock = prod.stock_quantity !== undefined && prod.stock_quantity <= 0;
+      const isOutOfStock = prod.stock !== undefined && prod.stock <= 0;
 
       return `
         <div class="js-product-card group bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer border border-gray-100 dark:border-gray-700 flex flex-col h-full relative animate-in fade-in" data-id="${prod.id}">
@@ -241,9 +213,6 @@ export const Home = {
           </div>
 
           <div class="p-3.5 md:p-4 flex flex-col flex-grow">
-            <span class="text-[9px] text-gray-400 dark:text-gray-500 uppercase font-black tracking-widest mb-1">
-              ${prod.categories?.name || 'Geral'}
-            </span>
             <h3 class="font-bold text-gray-800 dark:text-white text-xs md:text-sm line-clamp-2 mb-2 flex-grow leading-snug">
               ${title}
             </h3>
@@ -272,7 +241,7 @@ export const Home = {
     const formatCurrency = (value) =>
       new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 
-    // Filtro de busca em tempo real
+    // Live search
     const searchInput = container.querySelector('#search-input');
     if (searchInput) {
       searchInput.oninput = (e) => {
@@ -285,13 +254,12 @@ export const Home = {
       };
     }
 
-    // Filtro por categorias
+    // Category filter
     container.querySelectorAll('.js-category-btn').forEach(btn => {
       btn.onclick = () => {
         const catId = btn.dataset.categoryId;
         this.selectedCategoryId = catId === 'all' ? null : catId;
 
-        // Atualiza estilo dos botões de categoria
         container.querySelectorAll('.js-category-btn').forEach(b => {
           b.className = 'js-category-btn whitespace-nowrap px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition border bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-gray-300';
         });
@@ -309,7 +277,6 @@ export const Home = {
   },
 
   bindCardEvents(container) {
-    // Clique no Card para Abrir Detalhes (Modal)
     container.querySelectorAll('.js-product-card').forEach(card => {
       card.onclick = (e) => {
         if (e.target.closest('.js-quick-add')) return;
@@ -326,7 +293,6 @@ export const Home = {
       };
     });
 
-    // Clique no Botão de Compra Rápida "Adicionar"
     container.querySelectorAll('.js-quick-add').forEach(btn => {
       btn.onclick = (e) => {
         e.stopPropagation();

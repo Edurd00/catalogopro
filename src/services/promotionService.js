@@ -1,4 +1,4 @@
-import { supabase } from '../config/supabase.js';
+import { dbService } from './dbService.js';
 
 export const promotionService = {
   /**
@@ -6,17 +6,8 @@ export const promotionService = {
    */
   async getPromoProducts() {
     try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('in_stock', true)
-        .not('promo_price', 'is', null) // Garante que há preço promocional
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      
-      // Filtro extra de segurança para garantir integridade matemática do desconto
-      return (data || []).filter(product => product.promo_price < product.price);
+      const products = await dbService.getProducts({ active: true });
+      return products.filter(p => p.promotional_price && Number(p.promotional_price) < Number(p.price));
     } catch (error) {
       console.error('Erro no promotionService.getPromoProducts:', error.message);
       return [];
